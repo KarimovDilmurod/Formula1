@@ -54,7 +54,7 @@ const RaceResultScreen = ({route}:IProps) => {
 
 
   if (driverResultsLoading) {
-    return <ActivityIndicator size="large" />;
+    return <ActivityIndicator size="large" style={{flex: 1}} />;
   }
 
   return (
