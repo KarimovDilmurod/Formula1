@@ -48,7 +48,7 @@ const DetailScreen = ({ route }: IProps) => {
   }, [driverId]);
 
   if (getDriverLoading) {
-    return <ActivityIndicator size="large" style={{ flex: 1 }} />;
+    return <ActivityIndicator size="large" style={styles.container} />;
   }
 
   const {
@@ -81,8 +81,8 @@ const DetailScreen = ({ route }: IProps) => {
           <DetailSection title="Number" name={permanentNumber.toString()} />
         )}
         {url && (
-          <TouchableOpacity onPress={() => Linking.openURL(url)}>
-            <Text style={{ color: 'blue', marginBottom: 10 }}>{url}</Text>
+          <TouchableOpacity style={{borderWidth: 1, borderRadius: 8}} onPress={() => Linking.openURL(url)}>
+            <Text style={styles.link}>{url}</Text>
           </TouchableOpacity>
         )}
 
@@ -90,7 +90,7 @@ const DetailScreen = ({ route }: IProps) => {
           activeOpacity={0.7}
           onPress={() => navigation.navigate('RaceResultScreen', { driverId })}
           style={styles.btn}>
-          <Text style={{ textAlign: 'center' }}>Race Result</Text>
+          <Text style={styles.btnText}>Race Result</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -127,6 +127,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#abebc6',
     borderRadius: 8,
     marginTop: 20,
+  },
+  link: {
+    color: 'blue',
+    marginVertical: 10,
+    textAlign: 'center',
+  },
+  btnText: {
+    textAlign: 'center',
   },
 });
 
