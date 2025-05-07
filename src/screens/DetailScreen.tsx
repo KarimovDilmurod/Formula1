@@ -1,8 +1,16 @@
-import React, {useEffect} from 'react';
-import {View, Text, SafeAreaView, StyleSheet, TouchableOpacity, ActivityIndicator} from 'react-native';
-import { useAppSelector } from '../state/index';
-import { fetchDriverByIdAction } from '../state/drivers/action';
+import React, { useEffect, memo } from 'react';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Linking,
+} from 'react-native';
+import { useAppSelector } from '../state';
 import { useDispatch } from 'react-redux';
+import { fetchDriverByIdAction } from '../state/drivers/action';
 import useSmartNavigation from '../hooks/useSmartNavigation';
 
 interface IProps {
@@ -14,58 +22,76 @@ interface IProps {
 }
 
 interface IDetailSection {
-  title: string
-  name: string
+  title: string;
+  name: string;
 }
 
-const DetailScreen = ({route}:IProps) => {
-  const driverId = route?.params?.driverId;
+const DetailSection = memo(({ title, name }: IDetailSection) => (
+  <View style={styles.detailSection}>
+    <Text>{title}</Text>
+    <Text>{name}</Text>
+  </View>
+));
+
+const DetailScreen = ({ route }: IProps) => {
+  const { driverId } = route.params;
   const dispatch = useDispatch();
   const navigation = useSmartNavigation();
-  const {selectedDriverItem, getDriverLoading} = useAppSelector(state => state.driver);
+  const { selectedDriverItem, getDriverLoading } = useAppSelector(
+    state => state.driver
+  );
 
   useEffect(() => {
-    if(driverId)
+    if (driverId) {
       dispatch(fetchDriverByIdAction(driverId));
+    }
   }, [driverId]);
 
-  const DetailSection = ({title, name}: IDetailSection) => {
-    return(
-      <View style={styles.detailSection}>
-        <Text>{title}</Text>
-
-        <Text>{name}</Text>
-      </View>
-    )
-  }
-
   if (getDriverLoading) {
-    return <ActivityIndicator size="large" />;
+    return <ActivityIndicator size="large" style={{ flex: 1 }} />;
   }
+
+  const {
+    givenName,
+    familyName,
+    nationality,
+    dateOfBirth,
+    code,
+    permanentNumber,
+    url,
+  } = selectedDriverItem || {};
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.wrapperContent}>
-        <TouchableOpacity style={styles.backContent} onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          style={styles.backContent}
+          onPress={() => navigation.goBack()}>
           <Text>Back</Text>
         </TouchableOpacity>
 
-        {selectedDriverItem?.givenName && <DetailSection title='FirstName' name={selectedDriverItem?.givenName} />}
-        {selectedDriverItem?.familyName && <DetailSection title='LastName' name={selectedDriverItem?.familyName} />}
-        {selectedDriverItem?.nationality && <DetailSection title='Country' name={selectedDriverItem?.nationality} />}
-        {selectedDriverItem?.dateOfBirth && <DetailSection title='Date of birth' name={selectedDriverItem?.dateOfBirth} />}
-        {selectedDriverItem?.code && <DetailSection title='Code' name={selectedDriverItem?.code} />}
-        {selectedDriverItem?.permanentNumber && <DetailSection title='Number' name={selectedDriverItem?.permanentNumber} />}
-        {selectedDriverItem?.url && <DetailSection title='Url' name={selectedDriverItem?.url} />}
+        {givenName && <DetailSection title="First Name" name={givenName} />}
+        {familyName && <DetailSection title="Last Name" name={familyName} />}
+        {nationality && <DetailSection title="Country" name={nationality} />}
+        {dateOfBirth && (
+          <DetailSection title="Date of Birth" name={dateOfBirth} />
+        )}
+        {code && <DetailSection title="Code" name={code} />}
+        {permanentNumber && (
+          <DetailSection title="Number" name={permanentNumber.toString()} />
+        )}
+        {url && (
+          <TouchableOpacity onPress={() => Linking.openURL(url)}>
+            <Text style={{ color: 'blue', marginBottom: 10 }}>{url}</Text>
+          </TouchableOpacity>
+        )}
 
-        <View>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={()=> navigation.navigate('RaceResultScreen', {driverId})}
-            style={styles.btn}>
-            <Text style={{textAlign: 'center'}}>Race Result</Text>
-            </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate('RaceResultScreen', { driverId })}
+          style={styles.btn}>
+          <Text style={{ textAlign: 'center' }}>Race Result</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -91,7 +117,6 @@ const styles = StyleSheet.create({
   },
   detailSection: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -100,8 +125,9 @@ const styles = StyleSheet.create({
   btn: {
     padding: 20,
     backgroundColor: '#abebc6',
-    borderRadius: 8
-  }
+    borderRadius: 8,
+    marginTop: 20,
+  },
 });
 
 export default DetailScreen;
