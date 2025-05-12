@@ -3,11 +3,12 @@ import axios from 'axios';
 import { Driver, RaceResult } from '../../types/data';
 
 export const fetchDriversAction = createAsyncThunk<
-  Driver[]
->('drivers/fetchDrivers', async (_, thunkAPI) => {
+  Driver[],
+  { offset: number }
+>('drivers/fetchDrivers', async ({ offset }, thunkAPI) => {
   try {
     const response = await axios.get(
-      `https://ergast.com/api/f1/drivers.json?limit=${20}&offset=${0}`
+      `https://ergast.com/api/f1/drivers.json?limit=20&offset=${offset}`
     );
     return response.data.MRData.DriverTable.Drivers;
   } catch (e) {
@@ -67,3 +68,25 @@ export const fetchDriverResultsAction = createAsyncThunk<
     }
   }
 );
+
+export const getMoreDriversAction = createAsyncThunk<
+  Driver[],
+  { offset: number },
+  { rejectValue: string }
+>(
+  'drivers/fetchMoreDrivers',
+  async ({ offset }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `https://ergast.com/api/f1/drivers.json?limit=${20}&offset=${offset}`
+      );
+
+      const drivers = response.data.MRData.DriverTable.Drivers;
+
+      return drivers as Driver[];
+    } catch (error: any) {
+      return rejectWithValue('error');
+    }
+  }
+);
+

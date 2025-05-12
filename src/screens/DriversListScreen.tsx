@@ -1,10 +1,18 @@
 import React, {useEffect, useCallback} from 'react';
-import {View, Text, SafeAreaView, StyleSheet, TouchableOpacity, FlatList} from 'react-native';
-import { useAppSelector } from '../state/index';
-import { fetchDriversAction } from '../state/drivers/action';
-import { useDispatch } from 'react-redux';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  ActivityIndicator
+} from 'react-native';
+import {useAppSelector} from '../state/index';
+import {fetchDriversAction, getMoreDriversAction} from '../state/drivers/action';
+import {useDispatch} from 'react-redux';
 import useSmartNavigation from '../hooks/useSmartNavigation';
-import { Driver } from '../types/data';
+import {Driver} from '../types/data';
 
 interface IDriverItem {
   item: Driver;
@@ -13,26 +21,30 @@ interface IDriverItem {
 const DriversListScreen = () => {
   const dispatch = useDispatch();
   const navigation = useSmartNavigation();
-  const {driversData} = useAppSelector(state => state.driver);
+  const {driversData, moreLoading, offset} = useAppSelector(state => state.driver);
 
   const handleItemPress = useCallback((id: string) => {
     navigation.navigate('DetailScreen', {driverId: id});
   }, [navigation]);
 
-  const DriverItem = ({item}: IDriverItem) => {
-    return(
-      <TouchableOpacity 
-        style={styles.item} 
-        onPress={() => handleItemPress(item.driverId)}
-      >
-        <Text>{item.familyName}</Text>
-      </TouchableOpacity>
-    )
-  }
+  const handleLoadMore = () => {
+    if (!moreLoading) {
+      dispatch(getMoreDriversAction({ offset: offset }));
+    }
+  };
+
+  const DriverItem = ({item}: IDriverItem) => (
+    <TouchableOpacity 
+      style={styles.item} 
+      onPress={() => handleItemPress(item.driverId)}
+    >
+      <Text>{item.familyName}</Text>
+    </TouchableOpacity>
+  );
 
   useEffect(() => {
-    dispatch(fetchDriversAction());
-  }, []);
+    dispatch(fetchDriversAction({ offset: 0 }));
+  }, [dispatch]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -41,12 +53,13 @@ const DriversListScreen = () => {
           ListHeaderComponent={<View><Text style={styles.title}>Drivers List</Text></View>}
           showsVerticalScrollIndicator={false}
           data={driversData}
-          keyExtractor={item => item.familyName.toString()}
-          renderItem={({ item }) => (
-            <DriverItem key={item.driverId} item={item}/>
-          )}
+          keyExtractor={item => item.driverId}
+          renderItem={({item}) => <DriverItem item={item} />}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={moreLoading ? <ActivityIndicator style={{ marginVertical: 16 }} /> : null}
         />
-        </View>
+      </View>
     </SafeAreaView>
   );
 };
@@ -67,6 +80,7 @@ const styles = StyleSheet.create({
   title: {
     textAlign: 'center',
     fontWeight: 700,
+    marginVertical: 12,
   }
 });
 

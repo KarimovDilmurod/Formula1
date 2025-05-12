@@ -6,4 +6,7 @@ export type DriversState = {
   selectedDriverItem: Driver | null
   driverResultsLoading: boolean
   driverResults: RaceResult[]
+  moreLoading: boolean
+  offset: number
+  limit: number
 }
